@@ -1,0 +1,1113 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Cargas">
+<title>Diário de Cargas</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap');
+
+  :root {
+    --bg: #0E0E10;
+    --surface: #18181C;
+    --surface2: #1F1F24;
+    --border: #2A2A30;
+    --accent: #C8A97E;
+    --accent-dim: rgba(200,169,126,0.1);
+    --muted: #5A5A62;
+    --muted2: #7A7A84;
+    --text: #EEEEF0;
+    --green: #6FCF97;
+    --green-dim: rgba(111,207,151,0.12);
+    --shoulder: #7EAFC8;
+    --glute: #C87EA9;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+    width: 100%;
+  }
+
+  body {
+    padding: max(1.5rem, env(safe-area-inset-top)) 1rem 5rem;
+  }
+
+  header {
+    max-width: 680px;
+    margin: 0 auto 2rem;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .header-left .eyebrow {
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.4rem;
+  }
+
+  .header-left h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(1.6rem, 5vw, 2.4rem);
+    line-height: 1.05;
+  }
+
+  .header-left h1 em { font-style: italic; color: var(--accent); }
+
+  .status-dot {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.65rem;
+    color: var(--muted2);
+    margin-top: 0.5rem;
+  }
+
+  .status-dot .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--green);
+  }
+
+  .reset-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted2);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.5rem 0.9rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s;
+    white-space: nowrap;
+  }
+
+  .reset-btn:active { border-color: var(--accent); color: var(--accent); }
+
+  .tabs { max-width: 680px; margin: 0 auto; }
+
+  .tab-nav {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 1.75rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+    gap: 0;
+  }
+
+  .tab-nav::-webkit-scrollbar { display: none; }
+
+  .tab-btn {
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.65rem 1.1rem;
+    cursor: pointer;
+    white-space: nowrap;
+    margin-bottom: -1px;
+    transition: color 0.2s, border-color 0.2s;
+  }
+
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  .day-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+    flex-wrap: wrap;
+  }
+
+  .day-header h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.3rem;
+  }
+
+  .focus-tag {
+    font-size: 0.62rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.55rem;
+    border-radius: 2px;
+  }
+
+  .tag-s { background: rgba(126,175,200,0.15); color: var(--shoulder); }
+  .tag-g { background: rgba(200,126,169,0.15); color: var(--glute); }
+  .tag-p { background: rgba(200,200,126,0.1); color: #C8C87E; }
+  .tag-c { background: rgba(126,200,160,0.1); color: #7EC8A0; }
+  .tag-q { background: rgba(200,126,126,0.1); color: #C87E7E; }
+
+  .section-label {
+    font-size: 0.62rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 1.25rem 0 0.6rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .ex-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.85rem 1rem;
+    margin-bottom: 0.45rem;
+    transition: border-color 0.2s;
+  }
+
+  .ex-card.progressed { border-color: var(--green); background: linear-gradient(135deg, var(--surface) 80%, var(--green-dim)); }
+
+  .ex-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.65rem;
+  }
+
+  .ex-name {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text);
+    line-height: 1.3;
+    flex: 1;
+  }
+
+  .ex-prescription {
+    font-size: 0.7rem;
+    color: var(--muted2);
+    white-space: nowrap;
+    padding-top: 0.1rem;
+  }
+
+  .load-row {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+  }
+
+  .load-label {
+    font-size: 0.68rem;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+    flex-shrink: 0;
+  }
+
+  .load-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.25rem;
+  }
+
+  .load-btn {
+    background: none;
+    border: none;
+    color: var(--muted2);
+    font-size: 1.1rem;
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  .load-btn:active { background: var(--border); color: var(--text); }
+
+  .load-input {
+    background: none;
+    border: none;
+    color: var(--accent);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    width: 56px;
+    text-align: center;
+    outline: none;
+  }
+
+  .load-input::placeholder { color: var(--muted); font-weight: 300; font-size: 0.8rem; }
+
+  .load-unit {
+    font-size: 0.68rem;
+    color: var(--muted);
+    flex-shrink: 0;
+  }
+
+  .progress-badge {
+    display: none;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.68rem;
+    color: var(--green);
+    font-weight: 500;
+    margin-left: auto;
+  }
+
+  .progress-badge.visible { display: flex; }
+
+  #toast {
+    position: fixed;
+    bottom: max(1.5rem, env(safe-area-inset-bottom));
+    left: 50%;
+    transform: translateX(-50%) translateY(4rem);
+    background: var(--green);
+    color: #0E1A13;
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 0.65rem 1.25rem;
+    border-radius: 99px;
+    white-space: nowrap;
+    opacity: 0;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    z-index: 100;
+    pointer-events: none;
+  }
+
+  #toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.5rem;
+    max-width: 320px;
+    width: 100%;
+  }
+
+  .modal h3 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .modal p {
+    font-size: 0.82rem;
+    color: var(--muted2);
+    line-height: 1.6;
+    margin-bottom: 1.25rem;
+  }
+
+  .modal-btns { display: flex; gap: 0.5rem; justify-content: flex-end; }
+
+  .modal-cancel {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted2);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.8rem;
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
+  .modal-confirm {
+    background: var(--accent);
+    border: none;
+    color: #0E0E10;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <p class="eyebrow">Diário de cargas</p>
+    <h1>Meu <em>Progresso</em></h1>
+    <div class="status-dot"><span class="dot"></span><span id="status-text">Dados salvos neste aparelho</span></div>
+  </div>
+  <button class="reset-btn" onclick="openResetModal()">Zerar tudo</button>
+</header>
+
+<div class="tabs">
+  <div class="tab-nav">
+    <button class="tab-btn active" onclick="switchTab('a', this)">Treino A</button>
+    <button class="tab-btn" onclick="switchTab('b', this)">Treino B</button>
+    <button class="tab-btn" onclick="switchTab('c', this)">Treino C</button>
+    <button class="tab-btn" onclick="switchTab('d', this)">Treino D</button>
+  </div>
+
+  <!-- TREINO A -->
+  <div id="tab-a" class="tab-panel active">
+    <div class="day-header">
+      <h2>Treino A</h2>
+      <span class="focus-tag tag-s">Ombro</span>
+      <span class="focus-tag tag-p">Peito</span>
+    </div>
+
+    <div class="section-label">Aquecimento</div>
+    <div class="ex-card" data-id="a0">
+      <div class="ex-top">
+        <div class="ex-name">Rotação de manguito com elástico</div>
+        <div class="ex-prescription">2 × 15</div>
+      </div>
+      <div class="load-row">
+        <span class="load-label">Elástico:</span>
+        <div class="load-controls">
+          <button class="load-btn" onclick="adjust('a0', -1)">−</button>
+          <input class="load-input" id="input-a0" type="number" inputmode="decimal" min="0" step="1" placeholder="—" oninput="handleInput('a0')">
+          <span class="load-unit">kg</span>
+          <button class="load-btn" onclick="adjust('a0', 1)">+</button>
+        </div>
+        <span class="progress-badge" id="badge-a0">↑ Progresso!</span>
+      </div>
+    </div>
+
+    <div class="section-label">Principal</div>
+
+    <div class="ex-card" data-id="a1">
+      <div class="ex-top">
+        <div class="ex-name">Desenvolvimento com halteres</div>
+        <div class="ex-prescription">4 × 8–10</div>
+      </div>
+      <div class="load-row">
+        <span class="load-label">Cada halter:</span>
+        <div class="load-controls">
+          <button class="load-btn" onclick="adjust('a1', -1)">−</button>
+          <input class="load-input" id="input-a1" type="number" inputmode="decimal" min="0" step="1" placeholder="—" oninput="handleInput('a1')">
+          <span class="load-unit">kg</span>
+          <button class="load-btn" onclick="adjust('a1', 1)">+</button>
+        </div>
+        <span class="progress-badge" id="badge-a1">↑ Progresso!</span>
+      </div>
+    </div>
+
+    <div class="ex-card" data-id="a2">
+      <div class="ex-top">
+        <div class="ex-name">Elevação lateral com halteres</div>
+        <div class="ex-prescription">4 × 12–15</div>
+      </div>
+      <div class="load-row">
+        <span class="load-label">Cada halter:</span>
+        <div class="load-controls">
+          <button class="load-btn" onclick="adjust('a2', -0.5)">−</button>
+          <input class="load-input" id="input-a2" type="number" inputmode="decimal" min="0" step="0.5" placeholder="—" oninput="handleInput('a2')">
+          <span class="load-unit">kg</span>
+          <button class="load-btn" onclick="adjust('a2', 0.5)">+</button>
+        </div>
+        <span class="progress-badge" id="badge-a2">↑ Progresso!</span>
+      </div>
+    </div>
+
+    <div class="ex-card" data-id="a3">
+      <div class="ex-top">
+        <div class="ex-name">Face pull na polia</div>
+        <div class="ex-prescription">3 × 15</div>
+      </div>
+      <div class="load-row">
+        <span class="load-label">Polia:</span>
+        <div class="load-controls">
+          <button class="load-btn" onclick="adjust('a3', -2.5)">−</button>
+          <input class="load-input" id="input-a3" type="number" inputmode="decimal" min="0" step="2.5" placeholder="—" oninput="handleInput('a3')">
+          <span class="load-unit">kg</span>
+          <button class="load-btn" onclick="adjust('a3', 2.5)">+</button>
+        </div>
+        <span class="progress-badge" id="badge-a3">↑ Progresso!</span>
+      </div>
+    </div>
+
+    <div class="ex-card" data-id="a4">
+      <div class="ex-top">
+        <div class="ex-name">Supino inclinado com halteres</div>
+        <div class="ex-prescription">3 × 10–12</div>
+      </div>
+      <div class="load-row">
+        <span class="load-label">Cada halter:</span>
+        <div class="load-controls">
+          <button class="load-btn" onclick="adjust('a4', -1)">−</button>
+          <input class="load-input" id="input-a4" type="number" inputmode="decimal" min="0" step="1" placeholder="—" oninput="handleInput('a4')">
+          <span class="load-unit">kg</span>
+          <button class="load-btn" onclick="adjust('a4', 1)">+</button>
+        </div>
+        <span class="progress-badge" id="badge-a4">↑ Progresso!</span>
+      </div>
+    </div>
+
+    <div class="ex-card" data-id="a5">
+      <div class="ex-top">
+        <div class="ex-name">Tríceps na polia (corda)</div>
+        <div class="ex-prescription">3 × 12–15</div>
+      </div>
+      <div class="load-row">
+        <span class="load-label">Polia:</span>
+        <div class="load-controls">
+          <button class="load-btn" onclick="adjust('a5', -2.5)">−</button>
+          <input class="load-input" id="input-a5" type="number" inputmode="decimal" min="0" step="2.5" placeholder="—" oninput="handleInput('a5')">
+          <span class="load-unit">kg</span>
+          <button class="load-btn" onclick="adjust('a5', 2.5)">+</button>
+        </div>
+        <span class="progress-badge" id="badge-a5">↑ Progresso!</span>
+      </div>
+    </div>
+
+    <div class="ex-card" data-id="a6">
+      <div class="ex-top">
+        <div class="ex-name">Elevação frontal alternada</div>
+        <div class="ex-prescription">3 × 12</div>
+      </div>
+      <div class="load-row">
+        <span class="load-label">Cada halter:</span>
+        <div class="load-controls">
+          <button class="load-btn" onclick="adjust('a6', -0.5)">−</button>
+          <input class="load-input" id="input-a6" type="number" inputmode="decimal" min="0" step="0.5" placeholder="—" oninput="handleInput('a6')">
+          <span class="load-unit">kg</span>
+          <button class="load-btn" onclick="adjust('a6', 0.5)">+</button>
+        </div>
+        <span class="progress-badge" id="badge-a6">↑ Progresso!</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- TREINO B -->
+  <div id="tab-b" class="tab-panel">
+    <div class="day-header">
+      <h2>Treino B</h2>
+      <span class="focus-tag tag-g">Glúteo</span>
+      <span class="focus-tag tag-q">Posterior</span>
+    </div>
+
+    <div class="section-label">Ativação</div>
+    <div class="ex-card" data-id="b0">
+      <div class="ex-top">
+        <div class="ex-name">Abdução com elástico (mini band)</div>
+        <div class="ex-prescription">2 × 20</div>
+      </div>
+      <div class="load-row">
+        <span class="load-label">Nível elástico:</span>
+        <div class="load-controls">
+          <button class="load-btn" onclick="adjust('b0', -1)">−</button>
+          <input class="load-input" id="input-b0" type="number" inputmode="decimal" min="1" max="5" step="1" placeholder="—" oninput="handleInput('b0')">
+          <span class="load-unit">nível</span>
+          <button class="load-btn" onclick="adjust('b0', 1)">+</button>
+        </div>
+        <span class="progress-badge" id="badge-b0">↑ Progresso!</span>
+      </div>
+    </div>
+
+    <div class="section-label">Principal</div>
+
+    <div class="ex-card" data-id="b1">
+      <div class="ex-top">
+        <div class="ex-name">Levantamento terra convencional</div>
+        <div class="ex-prescription">4 × 6–8</div>
+      </div>
+      <div class="load-row">
+        <span class="load-label">Barra total:</span>
+        <div class="load-controls">
+          <button class="load-btn" onclick="adjust('b1', -2.5)">−</button>
+          <input class="load-input" id="input-b1" type="number" inputmode="decimal" min="0" step="2.5" placeholder="—" oninput="handleInput('b1')">
+          <span class="load-unit">kg</span>
+          <button class="load-btn" onclick="adjust('b1', 2.5)">+</button>
+        </div>
+        <span class="progress-badge" id="badge-b1">↑ Progresso!</span>
+      </div>
+    </div>
+
+    <div class="ex-card" data-id="b2">
+      <div class="ex-top">
+        <div class="ex-name">Hip thrust com barra</div>
+        <div class="ex-prescription">4 × 10–12</div>
+      </div>
+      <div class="load-row">
+        <span class="load-label">Barra total:</span>
+        <div class="load-controls">
+          <button class="load-btn" onclick="adjust('b2', -2.5)">−</button>
+          <input class="load-input" id="input-b2" type="number" inputmode="decimal" min="0" step="2.5" placeholder="—" oninput="handleInput('b2')">
+          <span class="load-unit">kg</span>
+          <button class="load-btn" onclick="adjust('b2', 2.5)">+</button>
+        </div>
+        <span class="progress-badge" id="badge-b2">↑ Progresso!</span>
+      </div>
+    </div>
+
+    <div class="ex-card" data-id="b3">
+      <div class="ex-top">
+        <div class="ex-name">Stiff com halteres</div>
+        <div class="ex-prescription">3 × 12</div>
+      </div>
+      <div class="load-row">
+        <span class="load-label">Cada halter:</span>
+        <div class="load-controls">
+          <button class="load-btn" onclick="adjust('b3', -1)">−</button>
+          <input class="load-input" id="input-b3" type="number" inputmode="decimal" min="0" step="1" placeholder="—" oninput="handleInput('b3')">
+          <span class="load-unit">kg</span>
+          <button class="load-btn" onclick="adjust('b3', 1)">+</button>
+        </div>
+        <span class="progress-badge" id="badge-b3">↑ Progresso!</span>
+      </div>
+    </div>
+
+    <div class="ex-card" data-id="b4">
+      <div class="ex-top">
+        <div class="ex-name">Agachamento sumô com halter</div>
+        <div class="ex-prescription">3 × 12–15</div>
+      </div>
+      <div class="load-row">
+        <span class="load-label">Halter:</span>
+        <div class="load-controls">
+          <button class="load-btn" onclick="adjust('b4', -1)">−</button>
+          <input class="load-input" id="input-b4" type="number" inputmode="decimal" min="0" step="1" placeholder="—" oninput="handleInput('b4')">
+          <span class="load-unit">kg</span>
+          <button class="load-btn" onclick="adjust('b4', 1)">+</button>
+        </div>
+        <span class="progress-badge" id="badge-b4">↑ Progresso!</span>
+      </div>
+    </div>
+
+    <div class="ex-card" data-id="b5">
+      <div class="ex-top">
+        <div class="ex-name">Extensão de quadril na polia (kickback)</div>
+        <div class="ex-prescription">3 × 15</div>
+      </div>
+      <div class="load-row">
+        <span class="load-label">Polia:</span>
+        <div class="load-controls">
+          <button class="load-btn" onclick="adjust('b5', -2.5)">−</button>
+          <input class="load-input" id="input-b5" type="number" inputmode="decimal" min="0" step="2.5" placeholder="—" oninput="handleInput('b5')">
+          <span class="load-unit">kg</span>
+          <button class="load-btn" onclick="adjust('b5', 2.5)">+</button>
+        </div>
+        <span class="progress-badge" id="badge-b5">↑ Progresso!</span>
+      </div>
+    </div>
+
+    <div class="ex-card" data-id="b6">
+      <div class="ex-top">
+        <div class="ex-name">Cadeira flexora</div>
+        <div class="ex-prescription">3 × 12</div>
+      </div>
+      <div class="load-row">
+        <span class="load-label">Máquina:</span>
+        <div class="load-controls">
+          <button class="load-btn" onclick="adjust('b6', -2.5)">−</button>
+          <input class="load-input" id="input-b6" type="number" inputmode="decimal" min="0" step="2.5" placeholder="—" oninput="handleInput('b6')">
+          <span class="load-unit">kg</span>
+          <button class="load-btn" onclick="adjust('b6', 2.5)">+</button>
+        </div>
+        <span class="progress-badge" id="badge-b6">↑ Progresso!</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- TREINO C -->
+  <div id="tab-c" class="tab-panel">
+    <div class="day-header">
+      <h2>Treino C</h2>
+      <span class="focus-tag tag-s">Ombro</span>
+      <span class="focus-tag tag-c">Costas</span>
+    </div>
+
+    <div class="section-label">Principal</div>
+
+    <div class="ex-card" data-id="c1">
+      <div class="ex-top">
+        <div class="ex-name">Remada curvada com barra</div>
+        <div class="ex-prescription">4 × 8–10</div>
+      </div>
+      <div class="load-row">
+        <span class="load-label">Barra total:</span>
+        <div class="load-controls">
+          <button class="load-btn" onclick="adjust('c1', -2.5)">−</button>
+          <input class="load-input" id="input-c1" type="number" inputmode="decimal" min="0" step="2.5" placeholder="—" oninput="handleInput('c1')">
+          <span class="load-unit">kg</span>
+          <button class="load-btn" onclick="adjust('c1', 2.5)">+</button>
+        </div>
+        <span class="progress-badge" id="badge-c1">↑ Progresso!</span>
+      </div>
+    </div>
+
+    <div class="ex-card" data-id="c2">
+      <div class="ex-top">
+        <div class="ex-name">Arnold press com halteres</div>
+        <div class="ex-prescription">4 × 10–12</div>
+      </div>
+      <div class="load-row">
+        <span class="load-label">Cada halter:</span>
+        <div class="load-controls">
+          <button class="load-btn" onclick="adjust('c2', -1)">−</button>
+          <input class="load-input" id="input-c2" type="number" inputmode="decimal" min="0" step="1" placeholder="—" oninput="handleInput('c2')">
+          <span class="load-unit">kg</span>
+          <button class="load-btn" onclick="adjust('c2', 1)">+</button>
+        </div>
+        <span class="progress-badge" id="badge-c2">↑ Progresso!</span>
+      </div>
+    </div>
+
+    <div class="ex-card" data-id="c3">
+      <div class="ex-top">
+        <div class="ex-name">Puxada na polia (pegada pronada)</div>
+        <div class="ex-prescription">3 × 10–12</div>
+      </div>
+      <div class="load-row">
+        <span class="load-label">Polia:</span>
+        <div class="load-controls">
+          <button class="load-btn" onclick="adjust('c3', -2.5)">−</button>
+          <input class="load-input" id="input-c3" type="number" inputmode="decimal" min="0" step="2.5" placeholder="—" oninput="handleInput('c3')">
+          <span class="load-unit">kg</span>
+          <button class="load-btn" onclick="adjust('c3', 2.5)">+</button>
+        </div>
+        <span class="progress-badge" id="badge-c3">↑ Progresso!</span>
+      </div>
+    </div>
+
+    <div class="ex-card" data-id="c4">
+      <div class="ex-top">
+        <div class="ex-name">Elevação lateral na polia baixa</div>
+        <div class="ex-prescription">4 × 15</div>
+      </div>
+      <div class="load-row">
+        <span class="load-label">Polia:</span>
+        <div class="load-controls">
+          <button class="load-btn" onclick="adjust('c4', -1)">−</button>
+          <input class="load-input" id="input-c4" type="number" inputmode="decimal" min="0" step="1" placeholder="—" oninput="handleInput('c4')">
+          <span class="load-unit">kg</span>
+          <button class="load-btn" onclick="adjust('c4', 1)">+</button>
+        </div>
+        <span class="progress-badge" id="badge-c4">↑ Progresso!</span>
+      </div>
+    </div>
+
+    <div class="ex-card" data-id="c5">
+      <div class="ex-top">
+        <div class="ex-name">Rosca direta com barra EZ</div>
+        <div class="ex-prescription">3 × 10–12</div>
+      </div>
+      <div class="load-row">
+        <span class="load-label">Barra total:</span>
+        <div class="load-controls">
+          <button class="load-btn" onclick="adjust('c5', -2.5)">−</button>
+          <input class="load-input" id="input-c5" type="number" inputmode="decimal" min="0" step="2.5" placeholder="—" oninput="handleInput('c5')">
+          <span class="load-unit">kg</span>
+          <button class="load-btn" onclick="adjust('c5', 2.5)">+</button>
+        </div>
+        <span class="progress-badge" id="badge-c5">↑ Progresso!</span>
+      </div>
+    </div>
+
+    <div class="ex-card" data-id="c6">
+      <div class="ex-top">
+        <div class="ex-name">Y raise com halteres (banco inclinado)</div>
+        <div class="ex-prescription">3 × 15</div>
+      </div>
+      <div class="load-row">
+        <span class="load-label">Cada halter:</span>
+        <div class="load-controls">
+          <button class="load-btn" onclick="adjust('c6', -0.5)">−</button>
+          <input class="load-input" id="input-c6" type="number" inputmode="decimal" min="0" step="0.5" placeholder="—" oninput="handleInput('c6')">
+          <span class="load-unit">kg</span>
+          <button class="load-btn" onclick="adjust('c6', 0.5)">+</button>
+        </div>
+        <span class="progress-badge" id="badge-c6">↑ Progresso!</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- TREINO D -->
+  <div id="tab-d" class="tab-panel">
+    <div class="day-header">
+      <h2>Treino D</h2>
+      <span class="focus-tag tag-g">Glúteo</span>
+      <span class="focus-tag tag-q">Quadríceps</span>
+    </div>
+
+    <div class="section-label">Ativação</div>
+    <div class="ex-card" data-id="d0">
+      <div class="ex-top">
+        <div class="ex-name">Ponte de glúteo unilateral</div>
+        <div class="ex-prescription">2 × 10</div>
+      </div>
+      <div class="load-row">
+        <span class="load-label">Peso extra:</span>
+        <div class="load-controls">
+          <button class="load-btn" onclick="adjust('d0', -1)">−</button>
+          <input class="load-input" id="input-d0" type="number" inputmode="decimal" min="0" step="1" placeholder="—" oninput="handleInput('d0')">
+          <span class="load-unit">kg</span>
+          <button class="load-btn" onclick="adjust('d0', 1)">+</button>
+        </div>
+        <span class="progress-badge" id="badge-d0">↑ Progresso!</span>
+      </div>
+    </div>
+
+    <div class="section-label">Principal</div>
+
+    <div class="ex-card" data-id="d1">
+      <div class="ex-top">
+        <div class="ex-name">Agachamento livre com barra</div>
+        <div class="ex-prescription">4 × 6–8</div>
+      </div>
+      <div class="load-row">
+        <span class="load-label">Barra total:</span>
+        <div class="load-controls">
+          <button class="load-btn" onclick="adjust('d1', -2.5)">−</button>
+          <input class="load-input" id="input-d1" type="number" inputmode="decimal" min="0" step="2.5" placeholder="—" oninput="handleInput('d1')">
+          <span class="load-unit">kg</span>
+          <button class="load-btn" onclick="adjust('d1', 2.5)">+</button>
+        </div>
+        <span class="progress-badge" id="badge-d1">↑ Progresso!</span>
+      </div>
+    </div>
+
+    <div class="ex-card" data-id="d2">
+      <div class="ex-top">
+        <div class="ex-name">Leg press (pegada alta e larga)</div>
+        <div class="ex-prescription">4 × 10–12</div>
+      </div>
+      <div class="load-row">
+        <span class="load-label">Máquina:</span>
+        <div class="load-controls">
+          <button class="load-btn" onclick="adjust('d2', -5)">−</button>
+          <input class="load-input" id="input-d2" type="number" inputmode="decimal" min="0" step="5" placeholder="—" oninput="handleInput('d2')">
+          <span class="load-unit">kg</span>
+          <button class="load-btn" onclick="adjust('d2', 5)">+</button>
+        </div>
+        <span class="progress-badge" id="badge-d2">↑ Progresso!</span>
+      </div>
+    </div>
+
+    <div class="ex-card" data-id="d3">
+      <div class="ex-top">
+        <div class="ex-name">Afundo búlgaro com halteres</div>
+        <div class="ex-prescription">3 × 10</div>
+      </div>
+      <div class="load-row">
+        <span class="load-label">Cada halter:</span>
+        <div class="load-controls">
+          <button class="load-btn" onclick="adjust('d3', -1)">−</button>
+          <input class="load-input" id="input-d3" type="number" inputmode="decimal" min="0" step="1" placeholder="—" oninput="handleInput('d3')">
+          <span class="load-unit">kg</span>
+          <button class="load-btn" onclick="adjust('d3', 1)">+</button>
+        </div>
+        <span class="progress-badge" id="badge-d3">↑ Progresso!</span>
+      </div>
+    </div>
+
+    <div class="ex-card" data-id="d4">
+      <div class="ex-top">
+        <div class="ex-name">Cadeira extensora</div>
+        <div class="ex-prescription">3 × 15</div>
+      </div>
+      <div class="load-row">
+        <span class="load-label">Máquina:</span>
+        <div class="load-controls">
+          <button class="load-btn" onclick="adjust('d4', -2.5)">−</button>
+          <input class="load-input" id="input-d4" type="number" inputmode="decimal" min="0" step="2.5" placeholder="—" oninput="handleInput('d4')">
+          <span class="load-unit">kg</span>
+          <button class="load-btn" onclick="adjust('d4', 2.5)">+</button>
+        </div>
+        <span class="progress-badge" id="badge-d4">↑ Progresso!</span>
+      </div>
+    </div>
+
+    <div class="ex-card" data-id="d5">
+      <div class="ex-top">
+        <div class="ex-name">Abdução sentada na máquina</div>
+        <div class="ex-prescription">4 × 20</div>
+      </div>
+      <div class="load-row">
+        <span class="load-label">Máquina:</span>
+        <div class="load-controls">
+          <button class="load-btn" onclick="adjust('d5', -2.5)">−</button>
+          <input class="load-input" id="input-d5" type="number" inputmode="decimal" min="0" step="2.5" placeholder="—" oninput="handleInput('d5')">
+          <span class="load-unit">kg</span>
+          <button class="load-btn" onclick="adjust('d5', 2.5)">+</button>
+        </div>
+        <span class="progress-badge" id="badge-d5">↑ Progresso!</span>
+      </div>
+    </div>
+
+    <div class="ex-card" data-id="d6">
+      <div class="ex-top">
+        <div class="ex-name">Panturrilha em pé</div>
+        <div class="ex-prescription">3 × 15–20</div>
+      </div>
+      <div class="load-row">
+        <span class="load-label">Carga:</span>
+        <div class="load-controls">
+          <button class="load-btn" onclick="adjust('d6', -2.5)">−</button>
+          <input class="load-input" id="input-d6" type="number" inputmode="decimal" min="0" step="2.5" placeholder="—" oninput="handleInput('d6')">
+          <span class="load-unit">kg</span>
+          <button class="load-btn" onclick="adjust('d6', 2.5)">+</button>
+        </div>
+        <span class="progress-badge" id="badge-d6">↑ Progresso!</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast">↑ Carga atualizada!</div>
+
+<div class="modal-overlay" id="reset-modal">
+  <div class="modal">
+    <h3>Zerar tudo?</h3>
+    <p>Todas as cargas salvas serão apagadas. Essa ação não pode ser desfeita.</p>
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="closeResetModal()">Cancelar</button>
+      <button class="modal-confirm" onclick="confirmReset()">Zerar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---------- Camada de armazenamento com 3 fallbacks ---------- */
+/* 1) IndexedDB (mais robusto em modo standalone iOS)            */
+/* 2) localStorage (rápido, funciona na maioria dos casos)       */
+/* 3) Cookie de longa duração (último recurso, sempre funciona)  */
+
+const DB_NAME = 'treino_db';
+const STORE_NAME = 'cargas_store';
+const STORAGE_KEY = 'treino_cargas_v1';
+
+let dbInstance = null;
+
+function openDB() {
+  return new Promise((resolve, reject) => {
+    if (!window.indexedDB) { resolve(null); return; }
+    const req = indexedDB.open(DB_NAME, 1);
+    req.onupgradeneeded = (e) => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains(STORE_NAME)) {
+        db.createObjectStore(STORE_NAME);
+      }
+    };
+    req.onsuccess = (e) => resolve(e.target.result);
+    req.onerror = () => resolve(null);
+  });
+}
+
+function idbGet(key) {
+  return new Promise((resolve) => {
+    if (!dbInstance) { resolve(null); return; }
+    try {
+      const tx = dbInstance.transaction(STORE_NAME, 'readonly');
+      const store = tx.objectStore(STORE_NAME);
+      const req = store.get(key);
+      req.onsuccess = () => resolve(req.result || null);
+      req.onerror = () => resolve(null);
+    } catch { resolve(null); }
+  });
+}
+
+function idbSet(key, value) {
+  return new Promise((resolve) => {
+    if (!dbInstance) { resolve(false); return; }
+    try {
+      const tx = dbInstance.transaction(STORE_NAME, 'readwrite');
+      const store = tx.objectStore(STORE_NAME);
+      store.put(value, key);
+      tx.oncomplete = () => resolve(true);
+      tx.onerror = () => resolve(false);
+    } catch { resolve(false); }
+  });
+}
+
+function setCookie(name, value, days) {
+  try {
+    const expires = new Date(Date.now() + days * 864e5).toUTCString();
+    document.cookie = name + '=' + encodeURIComponent(value) + '; expires=' + expires + '; path=/; SameSite=Lax';
+    return true;
+  } catch { return false; }
+}
+
+function getCookie(name) {
+  try {
+    const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+    return match ? decodeURIComponent(match[2]) : null;
+  } catch { return null; }
+}
+
+async function loadData() {
+  // tenta IndexedDB primeiro
+  const idbVal = await idbGet(STORAGE_KEY);
+  if (idbVal) {
+    try { return JSON.parse(idbVal); } catch {}
+  }
+  // tenta localStorage
+  try {
+    const lsVal = localStorage.getItem(STORAGE_KEY);
+    if (lsVal) return JSON.parse(lsVal);
+  } catch {}
+  // tenta cookie
+  const cookieVal = getCookie(STORAGE_KEY);
+  if (cookieVal) {
+    try { return JSON.parse(cookieVal); } catch {}
+  }
+  return {};
+}
+
+async function saveData(data) {
+  const json = JSON.stringify(data);
+  await idbSet(STORAGE_KEY, json);
+  try { localStorage.setItem(STORAGE_KEY, json); } catch {}
+  setCookie(STORAGE_KEY, json, 730);
+}
+
+/* ---------- Lógica do app ---------- */
+
+function getInputEl(id) { return document.getElementById('input-' + id); }
+function getBadgeEl(id) { return document.getElementById('badge-' + id); }
+function getCard(id) { return document.querySelector('[data-id="' + id + '"]'); }
+
+let currentData = {};
+
+async function handleInput(id) {
+  const input = getInputEl(id);
+  const val = parseFloat(input.value);
+  if (isNaN(val) || val < 0) return;
+
+  const prev = currentData[id];
+  const progressed = prev !== undefined && val > prev;
+
+  currentData[id] = val;
+  await saveData(currentData);
+
+  updateBadge(id, progressed);
+  if (progressed) showToast();
+}
+
+function adjust(id, delta) {
+  const input = getInputEl(id);
+  const current = parseFloat(input.value) || 0;
+  const newVal = Math.max(0, parseFloat((current + delta).toFixed(2)));
+  input.value = newVal;
+  handleInput(id);
+}
+
+function updateBadge(id, progressed) {
+  const badge = getBadgeEl(id);
+  const card = getCard(id);
+  if (progressed) {
+    badge.classList.add('visible');
+    card.classList.add('progressed');
+  } else {
+    badge.classList.remove('visible');
+    card.classList.remove('progressed');
+  }
+}
+
+let toastTimer;
+function showToast() {
+  const toast = document.getElementById('toast');
+  toast.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove('show'), 2200);
+}
+
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  btn.classList.add('active');
+}
+
+function openResetModal() { document.getElementById('reset-modal').classList.add('open'); }
+function closeResetModal() { document.getElementById('reset-modal').classList.remove('open'); }
+
+async function confirmReset() {
+  currentData = {};
+  await idbSet(STORAGE_KEY, '{}');
+  try { localStorage.removeItem(STORAGE_KEY); } catch {}
+  setCookie(STORAGE_KEY, '{}', 730);
+  document.querySelectorAll('.load-input').forEach(i => i.value = '');
+  document.querySelectorAll('.progress-badge').forEach(b => b.classList.remove('visible'));
+  document.querySelectorAll('.ex-card').forEach(c => c.classList.remove('progressed'));
+  closeResetModal();
+}
+
+async function init() {
+  dbInstance = await openDB();
+  currentData = await loadData();
+
+  Object.entries(currentData).forEach(([id, val]) => {
+    const input = getInputEl(id);
+    if (input) input.value = val;
+  });
+
+  // se os dados vieram só do cookie/localStorage, regrava no IndexedDB pra reforçar
+  if (dbInstance && Object.keys(currentData).length > 0) {
+    await idbSet(STORAGE_KEY, JSON.stringify(currentData));
+  }
+
+  document.getElementById('status-text').textContent =
+    Object.keys(currentData).length > 0
+      ? 'Dados restaurados deste aparelho'
+      : 'Pronto para registrar';
+}
+
+init();
+
+// Salva também quando a página perde o foco, reforçando persistência
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') {
+    saveData(currentData);
+  }
+});
+window.addEventListener('pagehide', () => {
+  saveData(currentData);
+});
+</script>
+</body>
+</html>
